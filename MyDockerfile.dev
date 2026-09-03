@@ -1,0 +1,47 @@
+FROM apache/airflow:2.8.1
+
+USER root
+
+# Устанавливаем системные зависимости, необходимые для работы Chromium (Playwright) и Xvfb
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        libnss3 \
+        libx11-xcb1 \
+        libxcomposite1 \
+        libxdamage1 \
+        libxrandr2 \
+        libgbm1 \
+        libasound2 \
+        libxshmfence1 \
+        libxext6 \
+        libxi6 \
+        libxtst6 \
+        libglib2.0-0 \
+        libatk1.0-0 \
+        libatk-bridge2.0-0 \
+        libcups2 \
+        libdrm2 \
+        libxkbcommon0 \
+        libxfixes3 \
+        libpango-1.0-0 \
+        libcairo2 \
+        xvfb \
+    && rm -rf /var/lib/apt/lists/*
+
+# Переключаемся на airflow для установки Python-зависимостей
+USER airflow
+
+# Устанавливаем Python-зависимости
+RUN pip install --no-cache-dir \
+    requests \
+    beautifulsoup4 \
+    pandas \
+    sqlalchemy \
+    psycopg2-binary \
+    openpyxl \
+    python-dotenv \
+    playwright \
+    playwright-stealth
+
+# Устанавливаем браузер Chromium для Playwright
+RUN playwright install chromium

@@ -1,0 +1,11 @@
+pandas
+sqlalchemy
+psycopg2-binary
+requests
+beautifulsoup4
+playwright
+playwright-stealth
+openpyxl
+undetected-chromedriver
+python-dotenv
+curl_cffi

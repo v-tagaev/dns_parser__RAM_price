@@ -6,4 +6,4 @@ __pycache__/
 airflow/logs/
 airflow/airflow.db
 postgres_data/
-.DS_Store
+.DS_Store"parsers/chrome_debug_profile/" 

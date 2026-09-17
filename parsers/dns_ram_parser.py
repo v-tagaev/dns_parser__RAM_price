@@ -3,106 +3,103 @@ import random
 import time
 import re
 import pandas as pd
-from datetime import datetime, timezone
+from datetime import datetime
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 from playwright.sync_api import sync_playwright, Browser, Page, BrowserContext
+from bs4 import BeautifulSoup
 
-from save_parsers_to_db import save_df_to_postgres   #общее подключение к БД postgres
-from browser_setup_airflow_and_windows import setup_browser
+from save_parsers_to_db import save_df_to_postgres              #общее подключение к БД postgres
+from browser_setup_airflow_and_windows import setup_browser     #подключение к браузеру и загрузка страницы
+from browser_setup_airflow_and_windows import scroll_to_bottom  #скроллинг страницы
 
+#логгирование
+import logging
+from setup_logger import setup_logger
+logger = setup_logger(__name__)
 
 def parser_dns_auto_cdp(url_that_we_need: str):
     with sync_playwright() as playwright:
         # подключаемся и получаем страницы, подключение и статус
-        page, browser, status_browser_opened = setup_browser(playwright, url_that_we_need)
+        page, browser, status_browser_opened = setup_browser(
+            playwright,
+            url_that_we_need,
+            timeout=60000
+        )
 
-        print(f"URL: {page.url}")
-        print(f"Title: {page.title()}")
-        # Выведем первые 100 символов текста страницы, чтобы понять, что загрузилось
-        print(page.inner_text('body')[:100])
-        
-        try: 
-            ram_rows = [] #данные на выход (будет лист со словарями)      
-    #---------------------------------------------------------------------------------
-    # САМ ПАРСИНГ                     
+        logger.info(f"URL: {page.url}")
+        logger.info(f"Title: {page.title()}")
+         
+        #скроллим страницы, чтобы подгрузить все карточки
+        scroll_to_bottom(page)
+        #---------------------------------------------------------------------------------
+        # САМ ПАРСИНГ
+        try:
+            html = page.content()
+            soup = BeautifulSoup(html, 'html.parser')
+            products = soup.select('.catalog-product')
+            logger.info(f"Найдено элементов на странице: {len(products)}")
 
-        # Ищем все карточки товаров на странице по CSS-классу '.catalog-product'
-            products = page.query_selector_all('.catalog-product')
-            print(f"📦 Найдено элементов на странице: {len(products)}")
-
-            # Итерируемся (проходим циклом) по каждой найденной карточке товара
+            ram_rows = []
             for product in products:
                 try:
-                    # Ищем элемент с названием плашки памяти
-                    name_elem = product.query_selector('.catalog-product__name')
+                    name_elem = product.select_one('.catalog-product__name')
                     if not name_elem:
-                        continue  # Если названия нет (например, это баннер), пропускаем элемент
-                    # Заменяем найденный мусор на пустоту, а .str.strip() уберет случайные пробелы по краям
-                    full_name_temp = name_elem.inner_text().strip()
-                    full_name = re.sub(r'Оперативная память\s*(?:SODIMM)?\s*',' ', full_name_temp).strip()
-                    # заберем спеку, она немного отделльно
-                    spec_ram = name_elem.get_attribute("title")                
-                    #print(f'spec_ram {spec_ram}')
-                    # Изолированный блок try-except для цены
-                    try:
-                        price_elem = product.query_selector('.product-buy__price')
-                        if price_elem:
-                            try:
-                                # забираем текст через .inner_text()
-                                price_text = price_elem.inner_text()      
-                                # очищаем строку от мусора и пробелов
-                                price_clean = price_text.replace('₽', '').replace(' ', '').replace(',', '.').strip()
-                                price = float(price_clean)                            
-                                #print(price)                    
-                            except ValueError:
-                                price = None
-                                print('Ошибка цены бля')
-                        else:
-                            price = None # Если элемента цены нет на карточке 
-                    except Exception as e:
-                        print(f"Ошибка цены: {e}")
-                        price = None
-                    # Изолированный блок try-except для артикула
-                    try:
-                        # В верстке DNS код товара ВСЕГДА зашит в атрибут 'data-product' самой карточки.
-                        # get_attribute() считывает его моментально, без наведения мышки и ожидания.
-                            # Если вдруг на этой категории используется другой атрибут, проверяем альтернативу
-                        data_code = product.get_attribute('data-code')
-                        if not data_code:
-                            data_code = "Не найден"
-                    except Exception:
-                        data_code = "Ошибка артикула"
+                        continue
 
-                    # РЕГУЛЯРНЫЕ ВЫРАЖЕНИЯ (Regex)
+                    full_name_temp = name_elem.get_text(strip=True)
+                    full_name = re.sub(r'Оперативная память\s*(?:SODIMM)?\s*', ' ', full_name_temp).strip()
+                    full_title = name_elem.get('title', '') or ''
+
+                    # Цена
+                    price_elem = product.select_one('.product-buy__price')
+                    price = None
+                    if price_elem:
+                        price_text = price_elem.get_text(strip=True)
+                        price_clean = (price_text
+                                    .replace('₽', '')
+                                    .replace(' ', '')
+                                    .replace('\xa0', '')
+                                    .replace(',', '.'))
+                        try:
+                            price = float(price_clean)
+                        except ValueError:
+                            price = None
+                            logger.warning(f"Ошибка цены, глянь: {price_clean}")
+
+                    # Артикул
+                    data_code = product.get('data-code', '') or 'Не найден'
+
+                    # РЕГУЛЯРНЫЕ ВЫРАЖЕНИЯ (Regex)                
+
                     # Ищем объем памяти: цифры, после которых идет "ГБ" (например: 8 ГБ, 16ГБ)
-                    size_match = re.search(r'(\d+)\s*ГБ', spec_ram.split('DDR')[1])
+                    size_match = re.search(r'(\d+)\s*ГБ', full_title.split('DDR')[1])
                     # group(1) забирает только то, что попало в круглые скобки — то есть саму цифру объема
                     size = int(size_match.group(1)) if size_match else None
 
                     # Ищем количество: (в штуках)
-                    amount_match = re.search(r'(\d+)\s*шт', spec_ram)
+                    amount_match = re.search(r'(\d+)\s*шт', full_title)
                     # group(1) забирает только то, что попало в круглые скобки — то есть саму цифру объема
                     amount = int(amount_match.group(1)) if amount_match else 1
 
                     # Ищем тип поколения памяти: DDR3, DDR4, DDR5 или DDR3L
-                    type_match = re.search(r'(DDR\d[L]?)', spec_ram)
+                    type_match = re.search(r'(DDR\d[L]?)', full_title)
                     ram_type = type_match.group(1) if type_match else "Не указан"
 
                     # Ищем тип памяти: SODIMM, DIMM
-                    type_main_match = re.search(r'SODIMM', spec_ram, re.IGNORECASE)                 
+                    type_main_match = re.search(r'SODIMM', full_title, re.IGNORECASE)                 
                     if type_main_match:
                         ram_type_main = f'{type_main_match.group()}'
                     else:
                         ram_type_main = 'DIMM'
 
                     # Ищем частоту памяти в МГц (например: 1600 МГц, 3200 МГц)
-                    freq_match = re.search(r'(\d+)\s*МГц', spec_ram)
+                    freq_match = re.search(r'(\d+)\s*МГц', full_title)
                     frequency = int(freq_match.group(1)) if freq_match else None
 
                     # Ищем тайминги. Шаблон ищет структуру типа "11-11-11-28" или "22-22-22"
                     # Предварительно удаляем пробелы из описания, чтобы дефисы стояли вплотную к цифрам
-                    timings_match = re.search(r'(\d+(?:\([A-Z]+\))?-\d+-\d+(?:-\d+)?)', spec_ram.replace(' ', ''))
+                    timings_match = re.search(r'(\d+(?:\([A-Z]+\))?-\d+-\d+(?:-\d+)?)', full_title.replace(' ', ''))
                     timings = timings_match.group(1) if timings_match else "Не указаны"
 
                     # Ищем маркировку модели в заголовке (например: [SP008GLSTU160N02])
@@ -114,30 +111,30 @@ def parser_dns_auto_cdp(url_that_we_need: str):
                     brand = f"{brand_match.group(1)}" if brand_match else "Не указан"
 
                     # Добавляем собранный структурированный словарь в наш итоговый список ram_rows
-                    ram_rows.append({
-                        'full_name': full_name,         #-- "Полное название"
-                        'data_code': data_code,         #-- "Артикул"
-                        'type_of_ram': ram_type_main,   #-- "Тип"
-                        'generation': ram_type,         #-- "Поколение"
-                        'size_gb': size,                #-- "Объем, ГБ"
-                        'amount_in_set': amount,        #-- "В комплекте, шт."
-                        'speed_mhz': frequency,         #-- "Частота, МГц"
-                        'timings': timings,             #-- "Тайминги"
-                        'model': model,                 #-- "Модель"
-                        'brand': brand,                 #-- "Бренд"
-                        'price_rub': price,             #-- "Цена (руб.)"
-                        'full_title': spec_ram          #-- "Полный title"
+                    ram_rows.append({                        
+                        'ram_data_code': data_code,             #-- "Артикул"
+                        'ram_type_of_ram': ram_type_main,       #-- "Тип"
+                        'ram_generation': ram_type,             #-- "Поколение"
+                        'ram_size_gb': size,                    #-- "Объем, ГБ"
+                        'ram_amount_in_set': amount,            #-- "В комплекте, шт."
+                        'ram_speed_mhz': frequency,             #-- "Частота, МГц"
+                        'ram_timings': timings,                 #-- "Тайминги"
+                        'ram_model': model,                     #-- "Модель"
+                        'ram_brand': brand,                     #-- "Бренд"
+                        'ram_price_rub': price,                 #-- "Цена (руб.)"
+                        'ram_full_title': full_title            #-- "Полный title"
                     })
-
                 except Exception:
+                    logger.warning(f"!! Ошибка парсинга карточки: {full_name}")
                     # Если упал парсинг конкретной карточки, ключевое слово `continue` 
                     # заставляет скрипт проигнорировать её и перейти к следующему товару
-                    continue 
+                    continue
 
+            logger.info(f"Собрано {len(ram_rows)} строк")
             return ram_rows
 
         except Exception as e:
-            print(f"Ошибка {type(e).__name__}: {e}")
+            logger.error(f"!! Ошибка {type(e).__name__}: {e}")
             return []
         finally:
             if status_browser_opened:
@@ -151,7 +148,7 @@ def main():
     ram_rows += parser_dns_auto_cdp('https://www.dns-shop.ru/catalog/17a89a3916404e77/operativnaa-pamat-dimm/')
 
     df = pd.DataFrame(ram_rows) #-- pd-Pandas DataFrame-двумерная таблица
-    df['parsed_at'] = datetime.now(timezone.utc)   #--добавляем колонку created_at
+    df['ram_parsed_at'] = datetime.now()   #--добавляем колонку parsed_at
 
     """
     Проверяем работаем в Docker или Windows
@@ -160,21 +157,17 @@ def main():
     is_docker = "AIRFLOW_HOME" in os.environ
 
     if is_docker:
-        print("🚀 Парсер запущен в Docker/Airflow. Сохраняем в БД")
+        logger.info("- Парсер был запущен в Docker/Airflow. Сохраняем в БД")
         save_df_to_postgres(df)    #--сохраняем таблицу df в БД в таблицы ram_items и ram_prices
 
     else:
-        print("💻 Парсер запущен на Windows. Сохраняем в Excel")
+        logger.info("- Парсер был запущен на Windows. Сохраняем в Excel")
         #--название для excel файла
-        output_file = 'dns_auto_parsed_RAM.xlsx' 
+        output_file = f'dns_auto_parsed_RAM_{datetime.now().strftime("%d.%m.%Y_%H-%M")}.xlsx'
 
         if not df.empty:
-                # Убираем временную зону для Excel
-                df_excel = df.copy()
-                df_excel['parsed_at'] = df_excel['parsed_at'].dt.tz_localize(None)  
-
-                df_excel.to_excel(output_file, index=False)
                 
+                df.to_excel(output_file, index=False)                
                 wb = load_workbook(output_file)
                 ws = wb.active
                 for col_idx, col in enumerate(ws.columns, 1):
@@ -182,9 +175,9 @@ def main():
                     col_letter = get_column_letter(col_idx)
                     ws.column_dimensions[col_letter].width = max(max_len + 3, 12)
                 wb.save(output_file)
-                print(f"✅ Данные успешно сохранены в файл: {output_file}")
+                logger.info(f"Данные успешно сохранены в файл: {output_file}")
         else:
-            print("❌ Не удалось собрать данные.")
+            logger.error("!! Не удалось собрать данные.")
     
 if __name__ == "__main__":
     main()

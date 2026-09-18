@@ -44,7 +44,7 @@
 <p align="left">
   <a href="https://skillicons.dev">
     <img src="https://skillicons.dev/icons?i=py,postgres,docker,github,vscode" />
-    <img src="airflow/logo.png" alt="Logo" width="20" height="auto"/>
+    <img src="airflow/logo.png" alt="Logo" width="40" height="auto"/>
   </a>
 </p>
 

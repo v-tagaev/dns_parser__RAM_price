@@ -48,7 +48,7 @@ graph LR
     C --> E[BeautifulSoup]
     E --> F[PostgreSQL]
 ```
-
+---
 ## 1.Технологии
 
 Проект построен с использованием следующего стека:
@@ -67,23 +67,24 @@ graph LR
 | Контейнеризация | Docker, Docker Compose | Развёртывание инфраструктуры |
 | Парсинг | Playwright, BeautifulSoup4 | Сбор и обработка данных |
 | Обработка данных | Pandas, SQLAlchemy | Трансформация и загрузка данных |
-```
+
 ---
 ##  2.Скриншоты
 
-### Airflow DAG
-![Airflow DAG](docs/airflow_graph.png)
-<img src="docs/airflow_graph.png" height="auto" />
+### Airflow UI
+![Airflow UI](docs/airflow_ui.png)
 
+### Граф DAG
+![Airflow Graph](docs/airwlow_graph.png)
 
-### Данные в PostgreSQL
-![pgAdmin](docs/pgadmin_tables.png)
-<img src="pg_admin_table_ram_items.png" height="auto" />
-<img src="pg_admin_table_currency.png" height="auto" />
+### Данные в pgAdmin
+![pgAdmin — ram_items](docs/pg_admin_table_ram_items.png)
+![pgAdmin — ram_prices](docs/pg_admin_table_ram_prices.png)
+![pgAdmin — currency](docs/pg_admin_table_currency.png)
+![pgAdmin — exchange_rate](docs/pg_admin_table_exchange_rate.png)
+
 ### Результат в Excel
-![Excel](docs/excel_result.png)
-<img src="docs/airflow_graph.png" height="auto" />
-```
+![Excel](docs/excel.png)
 
 ---
 ## 3.Установка

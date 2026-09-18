@@ -1,9 +1,6 @@
 <div align="center">
-
   <img src="logo.png" alt="Logo" width="200" height="auto" />
-
   <h1>DNS RAM Price Parser</h1>
-
   <p>
     Автоматизированный инструмент для мониторинга цен на оперативную память в магазине DNS.
   </p>

@@ -43,7 +43,7 @@
 
 <p align="left">
   <a href="https://skillicons.dev">
-    <img src="https://skillicons.dev/icons?i=py,postgres,docker,airflow,pgadmin,github,vscode,playwright,openpyxl,beautifulsoup" />
+    <img src="https://skillicons.dev/icons?i=py,postgresql,docker,airflow,pgadmin,github,vscode,playwright,openpyxl,beautifulsoup" />
   </a>
 </p>
 

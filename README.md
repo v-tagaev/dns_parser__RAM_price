@@ -43,7 +43,7 @@
 
 <p align="left">
   <a href="https://skillicons.dev">
-    <img src="https://skillicons.dev/icons?i=py,postgres,docker,airflow,github,vscode,playwright,openpyxl,beautifulsoup" />
+    <img src="https://skillicons.dev/icons?i=py,postgres,docker,airflow,github,vscode" />
     <img src="https://share.google/JuNjSJUVIRe8G3CxP" />
     <img src="https://share.google/SUgz0SlD3f8pcv2dE" />
     <img src="https://share.google/HVy4J4lxdn2n7IQnl" />

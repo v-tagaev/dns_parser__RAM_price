@@ -69,7 +69,7 @@ graph LR
 | Обработка данных | Pandas, SQLAlchemy | Трансформация и загрузка данных |
 ```
 ---
-##  Скриншоты
+##  2.Скриншоты
 
 ### Airflow DAG
 ![Airflow DAG](docs/airflow_graph.png)
@@ -84,9 +84,9 @@ graph LR
 ![Excel](docs/excel_result.png)
 <img src="docs/airflow_graph.png" height="auto" />
 ```
----
 
-## Установка
+---
+## 3.Установка
 
 ### 1. Клонируйте репозиторий
 ```bash
@@ -111,7 +111,8 @@ docker compose up -d
 - **Пароль:** `admin`
 ```
 ---
-##  Планы по развитию
-
+##  4.Планы по развитию
+```bash
 - [ ] Добавить парсинг других комплектующих (SSD, GPU)
 - [ ] Добавить алерты в Telegram при изменении цен
+```

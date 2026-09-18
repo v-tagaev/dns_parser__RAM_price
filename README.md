@@ -12,7 +12,7 @@
 <p align="center">
   <img src="https://img.shields.io/github/stars/v-tagaev/dns_parser__RAM_price?style=for-the-badge&color=orange" alt="stars">
   <img src="https://img.shields.io/github/issues/v-tagaev/dns_parser__RAM_price?style=for-the-badge&color=red" alt="issues">
-  <img src="https://img.shields.io/github/license/v-tagaev/dns_parser__RAM_price/LICENSE.txt?style=for-the-badge&color=blue" alt="license">
+  <img src="https://img.shields.io/github/license/v-tagaev/dns_parser__RAM_price?style=for-the-badge&color=blue" alt="license">
   <img src="https://img.shields.io/badge/Python-3.10+-yellow?style=for-the-badge&logo=python" alt="python">
 </p>
 

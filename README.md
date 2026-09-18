@@ -43,11 +43,10 @@
 
 <p align="left">
   <a href="https://skillicons.dev">
-    <img src="https://skillicons.dev/icons?i=py,selenium,github,vscode" />
+    <img src="https://skillicons.dev/icons?i=py,postgres,docker,airflow,pgadmin,github,vscode,playwright,openpyxl,beautifulsoup" />
   </a>
 </p>
 
-*Примечание: Если используешь другие библиотеки (BeautifulSoup, Playwright), замени иконки выше.*
 
 ---
 

@@ -3,6 +3,11 @@ __pycache__/
 *.pyc
 .env
 *.log
+*.exe
+*.doc
+*.docx
+*.xls
+*.xlsx
 airflow/logs/
 airflow/airflow.db
 postgres_data/

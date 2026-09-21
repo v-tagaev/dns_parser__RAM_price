@@ -45,7 +45,9 @@ graph LR
     B --> C[Chrome на Windows]
     C --> D[DNS-shop]
     D --> C
-    C --> E[BeautifulSoup]
+    C --> B
+    B --> A
+    A --> E[BeautifulSoup]
     E --> F[PostgreSQL]
 ```
 ---
@@ -59,6 +61,7 @@ graph LR
     <img src="airflow/logo.png" alt="Logo" width="46" height="auto"/>
   </a>
 </p>
+
 | Категория | Инструмент | Назначение |
 |-----------|------------|------------|
 | Язык | Python 3.10+ | Основной язык разработки |

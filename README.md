@@ -4,7 +4,7 @@
   <p>
     Автоматизированный инструмент для мониторинга цен на оперативную память в магазине DNS.
   </p>
-<div align="center">
+
 <!-- Бейджи -->
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10+-blue?logo=python" alt="Python">
@@ -147,10 +147,12 @@ LIMIT 5;
 **Средняя цена по брендам:**
 
 ```sql
+<p align="left">
 SELECT ram_brand, ROUND(AVG(ram_price_rub), 2) AS avg_price
 FROM ram_prices_usd
 GROUP BY ram_brand
 ORDER BY avg_price DESC;
+</p>
 ```
 
 ---

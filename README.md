@@ -5,23 +5,24 @@
     Автоматизированный инструмент для мониторинга цен на оперативную память в магазине DNS.
   </p>
 
-<!-- Бейджи -->
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.10+-blue?logo=python" alt="Python">
-  <img src="https://img.shields.io/badge/Airflow-2.8.1-red?logo=apache-airflow" alt="Airflow">
-  <img src="https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql" alt="PostgreSQL">
-  <img src="https://img.shields.io/badge/Docker-Compose-blue?logo=docker" alt="Docker">
-  <img src="https://img.shields.io/badge/Playwright-enabled-green?logo=playwright" alt="Playwright">
-</p>
+  <!-- Бейджи -->
+  <p>
+    <img src="https://img.shields.io/badge/Python-3.10+-blue?logo=python" alt="Python">
+    <img src="https://img.shields.io/badge/Airflow-2.8.1-red?logo=apache-airflow" alt="Airflow">
+    <img src="https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql" alt="PostgreSQL">
+    <img src="https://img.shields.io/badge/Docker-Compose-blue?logo=docker" alt="Docker">
+    <img src="https://img.shields.io/badge/Playwright-enabled-green?logo=playwright" alt="Playwright">
+  </p>
+  
+  <p>
+    <a href="#-о-проекте">О проекте</a> •
+    <a href="#-технологии">Технологии</a> •
+    <a href="#-установка">Установка</a> •
+    <a href="#-использование">Использование</a> •
+    <a href="#-скриншоты">Скриншоты</a>
+  </p>
 
-<p align="center">
-  <a href="#-о-проекте">О проекте</a> •
-  <a href="#-технологии">Технологии</a> •
-  <a href="#-установка">Установка</a> •
-  <a href="#-использование">Использование</a> •
-  <a href="#-скриншоты">Скриншоты</a>
-</p>
-
+</div>
 ---
 
 ## О проекте
@@ -58,8 +59,8 @@ graph LR
 <p align="left">
   <a href="https://skillicons.dev">
     <img src="https://skillicons.dev/icons?i=py,postgres,docker,github,vscode" />
-    <img src="airflow/logo.png" alt="Logo" width="46" height="auto"/>
-  </a>
+  </a>  
+  <img src="airflow/logo.png" alt="Logo" width="46" height="auto"/>
 </p>
 
 | Категория | Инструмент | Назначение |
@@ -110,11 +111,10 @@ docker compose up -d
 ```
 
 ### 3.4. Откройте Airflow
-```bash
+
   - **URL:** [http://localhost:8082](http://localhost:8082)
   - **Логин:** `admin`
   - **Пароль:** `admin`
-```
 ---
 ###  5.Планы по развитию
 
@@ -147,12 +147,10 @@ LIMIT 5;
 **Средняя цена по брендам:**
 
 ```sql
-<p align="left">
 SELECT ram_brand, ROUND(AVG(ram_price_rub), 2) AS avg_price
 FROM ram_prices_usd
 GROUP BY ram_brand
 ORDER BY avg_price DESC;
-</p>
 ```
 
 ---

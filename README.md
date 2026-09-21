@@ -110,14 +110,16 @@ docker compose up -d
 ```
 
 ### 4. Откройте Airflow
+```bash
 <div align="left">
 - **URL:** [http://localhost:8082](http://localhost:8082)
 - **Логин:** `admin`
 - **Пароль:** `admin`
 ```
-<div align="center">
+
 ###  5.Планы по развитию
 <div align="leftr">
+```bash
 - [ ] Добавить парсинг других комплектующих (SSD, GPU)
 - [ ] Добавить алерты в Telegram при изменении цен
 ```

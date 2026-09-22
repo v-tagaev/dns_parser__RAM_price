@@ -15,6 +15,9 @@ logger = setup_logger(__name__)
 
 
 def main():
+    '''
+    Функция для парсинга курса валют с сайта ЦБ РФ и сохранения данных в БД PostgreSQL или в Excel (для Windows).
+    '''
     url = "https://www.cbr-xml-daily.ru/daily_json.js"
     resp = requests.get(url)
     resp.raise_for_status()
@@ -35,19 +38,20 @@ def main():
         valute_rows1.append({
             'currency_numcode': numcode,     #код валюты ЦБ
             'currency_charcode': charcode,   #код валюты буквенный типо USD
-            'currency_name': currency_name,   #название валюты
+            'currency_name': currency_name,  #название валюты
         })
         
         valute_rows2.append({
-                'currency_charcode': charcode,   #код валюты буквенный типо USD
-                'rate_nominal': nominal,     #номинал валюты
-                'rate': rate,           #курс валюты
+                'currency_charcode': charcode,  #код валюты буквенный типо USD
+                'rate_nominal': nominal,        #номинал валюты
+                'rate': rate,                   #курс валюты
                 'rate_date': rate_date
             })
     #print(f'{valute_rows1}\n')
     #print(f'{valute_rows2}\n')
     df1 = pd.DataFrame(valute_rows1) #-- pd-Pandas DataFrame-двумерная таблица    
-    df2 = pd.DataFrame(valute_rows2) #-- pd-Pandas DataFrame-двумерная таблица
+    df2 = pd.DataFrame(valute_rows2) 
+
     #------------------------------------------------------------------------
     #Проверяем работаем в Docker или Windows сохраняем либо в БД, либо в Excel (windows)
     #------------------------------------------------------------------------

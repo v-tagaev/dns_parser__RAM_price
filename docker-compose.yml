@@ -3,6 +3,7 @@ services:
     #База данных PostgreSQL
     image: postgres:15
     container_name: de_postgres
+    restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -23,11 +24,14 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     container_name: de_pgadmin
+    restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
     depends_on:
       - postgres
     restart: always
@@ -40,6 +44,7 @@ services:
       context: .
       dockerfile: MyDockerfile.dev
     container_name: de_airflow_init
+    restart: always
     #user: "0:0"
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
@@ -61,6 +66,7 @@ services:
       context: .
       dockerfile: MyDockerfile.dev
     container_name: de_airflow_webserver
+    restart: always
     ports:
       - "8082:8080"
     environment:
@@ -86,15 +92,15 @@ services:
       context: .
       dockerfile: MyDockerfile.dev
     container_name: de_airflow_scheduler
-    network_mode: host # Используем сеть хоста, чтобы сайт не палил IP контейнера
+    restart: always
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       PYTHONUNBUFFERED: "1"  # Рекомендуется: логи парсера будут видны в реальном времени
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@de_postgres:5432/${POSTGRES_DB}
       AIRFLOW__WEBSERVER__SECRET_KEY: "my_super_secret_key"
       #
-      DB_HOST: localhost
+      DB_HOST: de_postgres
       DB_PORT: 5432
       DB_NAME: ${DB_NAME}  # имя БД для данных парсера не совпадает с БД для Airflow
       DB_USER: ${POSTGRES_USER}
@@ -119,4 +125,5 @@ services:
 
 
 volumes:
-  pgdata: {} 
+  pgdata: {}
+  pgadmin_data: {} 
